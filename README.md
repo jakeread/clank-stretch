@@ -6,3 +6,5 @@ Read the [dev log](log/clank-stretch-log.md) for updates, and find the [most up 
 
 ![stretch](log/images/2021-12-08_clank-stretch.jpg)
 ![stretch-swap](log/videos/2021-12-08_clank-pencil-demo.mp4)
+
+This repo is mirrored [on github](https://github.com/jakeread/clank-stretch/) and the [cba internal gitlab](https://gitlab.cba.mit.edu/jakeread/clank-stretch).
