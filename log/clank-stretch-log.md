@@ -561,9 +561,65 @@ This is way too heavy, I am going to setup a situation where the basics are in p
 
 Sweet lorde, it's like all day, but it's done now. Certainly haven't found any secret for hardware publishing... I'm rebooting fusion and I'll try a test BOM, then populate hardware / etc? Finish writing the site, push repos & bedone with it? 
 
---- 
+## 2022 02 07 
 
-assembly completion:
+### Toolchanger Perf 
 
-- second pencil 
-- psu-board addition, controller reconfig 
+I had a chance to performance test this yesterday, hotplate included. I'm going to note-take from video streams here, then post results on the webby. Here's the raw stuff:
+
+| hotplate touchoff | x data | x deviations, mm (inch) | y data | y deviations, mm (inch) | z data | z deviations, mm (inch) |
+| --- | --- | --- | --- | --- | --- | --- | 
+| 1 | 5.501 | -0.0172 (-0.0007) | 3.750 | -0.0063 (-0.0002) | 4.528 | 0.0088 (0.0003) |
+| 2 | 5.496 | -0.0122 (-0.0005) | 3.744 | -0.0003 (-0.0000) | 4.535 | 0.0018 (0.0001) |
+| 3 | 5.481 | 0.0028 (0.0001) | 3.743 | 0.0007 (0.0000) | 4.539 | -0.0022 (-0.0001) |
+| 4 | 5.475 | 0.0088 (0.0003) | 3.742 | 0.0017 (0.0001) | 4.539 | -0.0022 (-0.0001) |
+| 5 | 5.474 | 0.0098 (0.0004) | 3.742 | 0.0017 (0.0001) | 4.540 | -0.0032 (-0.0001) |
+| 6 | 5.476 | 0.0078 (0.0003) | 3.741 | 0.0027 (0.0001) | 4.540 | -0.0032 (-0.0001) |
+
+Then something a little easier to read:
+
+| axis | standard deviation after pickup, mm (inch) | average from center, mm (inch) |
+| --- | --- | --- |
+| x | 0.0047 (0.0002) | 5.921e-16 (2.331e-17) |
+| y | 0.0033 (0.0001) | -2.220e-16 (-8.742e-18) |
+| z | 0.0047 (0.0002) | -1.480e-16 (-5.828e-18) |
+
+These are all astoundingly good. Kinematics coming in hot. Standard deviation tells us how far off of zero the thing will be after each pickup, then average deviation could tell us if it's relatively well centered. Here's how I calculated that:
+
+```python
+def avgdev(series):
+    center = avg(series)
+    sum = 0
+    for i in range(len(series)):
+        sum += center - series[i]
+    avgd = sum / len(series)
+    print(avgd)
+```
+
+So, we can expect about 5 microns of error after each toolchange. That these errors are well centered (across only 6 samples anyways) is not terribly exciting / relevant.
+
+### Motion System Perf 
+
+Next I just hysteresis-checked the thing... I should include the video here, and maybe make some plots on each axis. 
+
+Alright this test is surprisingly revealing, and I'm also seeing some alarming drift in the z axis. 
+
+I just want to write a quick way to display all of this data... I think I'm just going to plot things out and then discuss / pick round numbers from the plots. 
+
+Alright I'm just collecting plots for these;
+
+![hys](../data/2022-02-07_x-hysteresis.png)
+![hys](../data/2022-02-07_y-hysteresis.png)
+![hys](../data/2022-02-07_z-hysteresis.png)
+
+These all look ~ similar enough, though Z is notably worse. Here's what I reckon:
+
+| axis | hysteresis mm (inch) |
+| --- | --- |
+| x | 0.050 (0.0020) |
+| y | 0.035 (0.0014) | 
+| z | 0.075 (0.0030) | 
+
+These are a lot worse than the repeatability tests, which registered about one whole order of magnitude less error, including the toolchanger swapping. I will write these up on the site and look forward to hooking the controllers up to closed loop, seeing if any of this can be reclaimed. 
+
+![vid](videos/2022-02-03-clank-perf.mp4)
